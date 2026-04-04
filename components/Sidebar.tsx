@@ -32,6 +32,7 @@ export default function Sidebar() {
   };
 
   const navItems = [
+    { name: "Home", href: "/" },
     { name: "Dashboard", href: "/dashboard" },
     { name: "Expenses", href: "/expenses" },
     { name: "Income", href: "/income" },

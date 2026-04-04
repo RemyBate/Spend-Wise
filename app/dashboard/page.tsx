@@ -1,4 +1,7 @@
+import IncomeExpenseProfitChart from "@/components/charts/income-expense-profit-chart";
 import { prisma } from "@/lib/prisma";
+import { REPORTING_MONTH, REPORTING_YEAR } from "@/lib/reporting-period";
+import { buildDashboardTwelveMonthSeries } from "@/lib/twelve-month-series";
 
 export default async function DashboardPage() {
   const user = await prisma.user.findUnique({
@@ -13,7 +16,6 @@ export default async function DashboardPage() {
           date: "desc",
         },
       },
-      categories: true,
     },
   });
 
@@ -26,11 +28,9 @@ export default async function DashboardPage() {
     );
   }
 
-  const currentMonth = 4;
-  const currentYear = 2026;
-
   const monthlyIncomeEntry = user.incomes.find(
-    (income) => income.month === currentMonth && income.year === currentYear
+    (income) =>
+      income.month === REPORTING_MONTH && income.year === REPORTING_YEAR
   );
 
   const monthlyIncome = monthlyIncomeEntry?.amount ?? 0;
@@ -38,8 +38,8 @@ export default async function DashboardPage() {
   const monthlyExpensesList = user.expenses.filter((expense) => {
     const expenseDate = new Date(expense.date);
     return (
-      expenseDate.getMonth() + 1 === currentMonth &&
-      expenseDate.getFullYear() === currentYear
+      expenseDate.getMonth() + 1 === REPORTING_MONTH &&
+      expenseDate.getFullYear() === REPORTING_YEAR
     );
   });
 
@@ -71,6 +71,11 @@ export default async function DashboardPage() {
   const recentExpenses = monthlyExpensesList
     .sort((a, b) => +new Date(b.date) - +new Date(a.date))
     .slice(0, 5);
+
+  const twelveMonthData = buildDashboardTwelveMonthSeries(
+    user.incomes,
+    user.expenses
+  );
 
   const summaryCards = [
     {
@@ -117,6 +122,23 @@ export default async function DashboardPage() {
             <p className="mt-2 text-sm text-slate-500">{card.note}</p>
           </div>
         ))}
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-1 border-b border-violet-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-violet-600">
+              Income, expenses &amp; profit (last 12 months)
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Grouped bars for income and expenses; red line is profit
+              (income − expenses) per month.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4">
+          <IncomeExpenseProfitChart data={twelveMonthData} />
+        </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-3">

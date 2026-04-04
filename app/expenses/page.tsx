@@ -1,9 +1,18 @@
+import FinanceChartsSection from "@/components/charts/finance-charts-section";
+import { buildSpendingByCategoryData } from "@/lib/chart-helpers";
 import { prisma } from "@/lib/prisma";
+import {
+  formatReportMonthLabel,
+  REPORTING_MONTH,
+  REPORTING_YEAR,
+} from "@/lib/reporting-period";
 
 export default async function ExpensesPage() {
   const user = await prisma.user.findUnique({
     where: { email: "demo@spendwise.com" },
     include: {
+      incomes: true,
+      categories: true,
       expenses: {
         include: {
           category: true,
@@ -25,6 +34,42 @@ export default async function ExpensesPage() {
   }
 
   const expenses = user.expenses;
+
+  const monthlyIncomeEntry = user.incomes.find(
+    (income) =>
+      income.month === REPORTING_MONTH && income.year === REPORTING_YEAR
+  );
+  const monthlyIncome = monthlyIncomeEntry?.amount ?? 0;
+
+  const monthlyExpensesList = expenses.filter((expense) => {
+    const expenseDate = new Date(expense.date);
+    return (
+      expenseDate.getMonth() + 1 === REPORTING_MONTH &&
+      expenseDate.getFullYear() === REPORTING_YEAR
+    );
+  });
+
+  const monthlyExpenses = monthlyExpensesList.reduce(
+    (sum, expense) => sum + expense.amount,
+    0
+  );
+
+  const categoryTotals: Record<string, number> = {};
+  for (const expense of monthlyExpensesList) {
+    const categoryName = expense.category?.name ?? "Other";
+    categoryTotals[categoryName] =
+      (categoryTotals[categoryName] ?? 0) + expense.amount;
+  }
+
+  const donutData = buildSpendingByCategoryData(
+    categoryTotals,
+    user.categories
+  );
+
+  const monthLabel = formatReportMonthLabel(
+    REPORTING_MONTH,
+    REPORTING_YEAR
+  );
 
   return (
     <div className="space-y-6">
@@ -54,6 +99,13 @@ export default async function ExpensesPage() {
           <option>All Dates</option>
         </select>
       </div>
+
+      <FinanceChartsSection
+        donutData={donutData}
+        monthLabel={monthLabel}
+        income={monthlyIncome}
+        expenses={monthlyExpenses}
+      />
 
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
         <table className="min-w-full text-left">
