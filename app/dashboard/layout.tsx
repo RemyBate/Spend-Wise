@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Sidebar from "@/components/Sidebar";
+import AppTopbar from "@/components/AppTopbar";
 
 export default function DashboardLayout({
   children,
@@ -7,12 +8,16 @@ export default function DashboardLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-slate-50 md:flex">
+    <div className="min-h-screen bg-slate-50 flex">
       <Sidebar />
 
-      <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-6 py-8">{children}</div>
-      </main>
+      <div className="flex-1">
+        <AppTopbar />
+
+        <main className="px-8 py-8">
+          <div className="mx-auto max-w-7xl">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
