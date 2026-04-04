@@ -24,7 +24,6 @@ export type TwelveMonthPoint = {
 
 /**
  * 12 consecutive calendar months ending at `anchorMonth` / `anchorYear` (inclusive).
- * Labels are short month names (unique within this window).
  */
 export function buildLast12MonthsSeries(
     anchorYear: number,
@@ -62,7 +61,6 @@ export function buildLast12MonthsSeries(
     return rows;
 }
 
-/** Uses reporting period month as the chart’s last month (matches dashboard demo). */
 export function buildDashboardTwelveMonthSeries(
     incomes: { month: number; year: number; amount: number }[],
     expenses: { date: Date; amount: number }[]

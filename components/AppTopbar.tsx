@@ -3,25 +3,51 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { performClientLogout } from "@/lib/client-logout";
+
 type User = {
-  id: string;
+  id?: string;
   name: string;
-  email: string;
 };
 
 export default function AppTopbar() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/session", { credentials: "include" });
+        const data = await res.json();
+        if (cancelled) return;
+        if (res.ok && data.user?.id) {
+          setUser(data.user);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          return;
+        }
+      } catch {
+        /* fall through */
+      }
+      if (cancelled) return;
+      const saved = localStorage.getItem("user");
+      if (saved) {
+        try {
+          setUser(JSON.parse(saved));
+        } catch {
+          localStorage.removeItem("user");
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
     <header className="border-b border-slate-200 bg-white">
-      <div className="flex items-center justify-between px-8 py-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 px-8 py-5">
         <div className="flex flex-wrap items-center gap-3">
           <div>
             <Link
@@ -43,10 +69,20 @@ export default function AppTopbar() {
           </Link>
         </div>
 
-        <div className="text-right">
-          <p className="text-sm text-slate-500">Signed in as</p>
-          <p className="font-medium text-slate-900">{user?.name || "User"}</p>
-        </div>
+        {user ? (
+          <div className="flex items-center gap-3">
+            <span className="max-w-[100px] truncate text-sm font-medium text-slate-700 md:max-w-none">
+              Hi, {user.name}
+            </span>
+            <button
+              type="button"
+              onClick={() => void performClientLogout()}
+              className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+            >
+              Logout
+            </button>
+          </div>
+        ) : null}
       </div>
     </header>
   );

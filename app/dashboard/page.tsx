@@ -128,11 +128,11 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-1 border-b border-violet-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold text-violet-600">
-              Income, expenses &amp; profit (last 12 months)
+              Income &amp; expenses (last 12 months)
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Grouped bars for income and expenses; red line is profit
-              (income − expenses) per month.
+              Grouped bars for income and expenses; red line is profit (income
+              − expenses) each month.
             </p>
           </div>
         </div>
