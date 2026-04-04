@@ -13,10 +13,38 @@ export default function Header() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/session", { credentials: "include" });
+        const data = await res.json();
+        if (cancelled) return;
+
+        if (res.ok && data.user?.id) {
+          setUser(data.user);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          return;
+        }
+
+        setUser(null);
+        localStorage.removeItem("user");
+      } catch {
+        if (cancelled) return;
+        const savedUser = localStorage.getItem("user");
+        if (savedUser) {
+          try {
+            setUser(JSON.parse(savedUser));
+          } catch {
+            localStorage.removeItem("user");
+          }
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function handleLogout() {
@@ -40,16 +68,32 @@ export default function Header() {
         </Link>
 
         <nav className="flex items-center gap-6 text-sm font-medium text-slate-700">
-          <Link href="/dashboard" className="hover:text-violet-600">
+          <Link
+            href="/dashboard"
+            prefetch={false}
+            className="hover:text-violet-600"
+          >
             Dashboard
           </Link>
-          <Link href="/expenses" className="hover:text-violet-600">
+          <Link
+            href="/expenses"
+            prefetch={false}
+            className="hover:text-violet-600"
+          >
             Expenses
           </Link>
-          <Link href="/income" className="hover:text-violet-600">
+          <Link
+            href="/income"
+            prefetch={false}
+            className="hover:text-violet-600"
+          >
             Income
           </Link>
-          <Link href="/categories" className="hover:text-violet-600">
+          <Link
+            href="/categories"
+            prefetch={false}
+            className="hover:text-violet-600"
+          >
             Categories
           </Link>
         </nav>

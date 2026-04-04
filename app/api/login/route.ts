@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import argon2 from "argon2";
 import { SignJWT } from "jose";
-
-const secret = new TextEncoder().encode(process.env.AUTH_SECRET!);
+import { getAuthSecretKey } from "@/lib/auth-secret";
 
 export async function POST(req: Request) {
     try {
@@ -45,7 +44,7 @@ export async function POST(req: Request) {
             .setProtectedHeader({ alg: "HS256" })
             .setIssuedAt()
             .setExpirationTime("7d")
-            .sign(secret);
+            .sign(getAuthSecretKey());
 
         const response = NextResponse.json(
             {

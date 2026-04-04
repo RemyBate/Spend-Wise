@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type User = {
@@ -11,7 +11,6 @@ type User = {
 };
 
 export default function Sidebar() {
-  const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
 
@@ -23,10 +22,13 @@ export default function Sidebar() {
   }, []);
 
   const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
+    try {
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
+    } catch {
+      /* ignore */
+    }
     localStorage.removeItem("user");
-    router.push("/auth");
-    router.refresh();
+    window.location.href = "/auth/login";
   };
 
   const navItems = [
@@ -57,6 +59,7 @@ export default function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={`rounded-lg px-4 py-3 text-sm font-medium transition ${
                   isActive
                     ? "bg-violet-600 text-white shadow-sm"

@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { getAuthSecretKey } from "@/lib/auth-secret";
 
-const secret = new TextEncoder().encode(process.env.AUTH_SECRET!);
-
-async function verifyToken(token: string) {
+async function isValidSessionToken(token: string): Promise<boolean> {
     try {
-        await jwtVerify(token, secret);
+        await jwtVerify(token, getAuthSecretKey());
         return true;
     } catch {
         return false;
@@ -17,22 +16,12 @@ export async function proxy(req: NextRequest) {
     const token = req.cookies.get("spendwise_token")?.value;
     const { pathname } = req.nextUrl;
 
-    const protectedRoutes = ["/dashboard", "/expenses", "/income", "/categories"];
     const authRoutes = ["/auth/login", "/auth/register"];
-
-    const isProtectedRoute = protectedRoutes.some((route) =>
-        pathname.startsWith(route)
-    );
-
     const isAuthRoute = authRoutes.some((route) =>
         pathname.startsWith(route)
     );
 
-    const isLoggedIn = token ? await verifyToken(token) : false;
-
-    if (isProtectedRoute && !isLoggedIn) {
-        return NextResponse.redirect(new URL("/auth/login", req.url));
-    }
+    const isLoggedIn = token ? await isValidSessionToken(token) : false;
 
     if (isAuthRoute && isLoggedIn) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -42,12 +31,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-    matcher: [
-        "/dashboard/:path*",
-        "/expenses/:path*",
-        "/income/:path*",
-        "/categories/:path*",
-        "/auth/login",
-        "/auth/register",
-    ],
+    matcher: ["/auth/login", "/auth/register"],
 };

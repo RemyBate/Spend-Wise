@@ -1,6 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-
-const secret = new TextEncoder().encode(process.env.AUTH_SECRET!);
+import { getAuthSecretKey } from "@/lib/auth-secret";
 
 export type SessionPayload = {
     userId: string;
@@ -13,10 +12,10 @@ export async function createSessionToken(payload: SessionPayload) {
         .setProtectedHeader({ alg: "HS256" })
         .setIssuedAt()
         .setExpirationTime("7d")
-        .sign(secret);
+        .sign(getAuthSecretKey());
 }
 
 export async function verifySessionToken(token: string) {
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, getAuthSecretKey());
     return payload as SessionPayload;
 }

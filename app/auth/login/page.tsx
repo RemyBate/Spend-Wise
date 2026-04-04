@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function LoginPage() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -22,6 +19,7 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/login", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -38,11 +36,8 @@ export default function LoginPage() {
 
       localStorage.setItem("user", JSON.stringify(data.user));
       setMessage("Login successful. Redirecting...");
-
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 1000);
-    } catch (error) {
+      window.location.assign("/dashboard");
+    } catch {
       setError("Something went wrong. Please try again.");
     }
 

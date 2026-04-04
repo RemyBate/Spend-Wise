@@ -18,19 +18,34 @@ export default function HomePage() {
           monitor your remaining balance in one clean dashboard.
         </p>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/dashboard"
-            className="rounded-lg bg-violet-600 px-6 py-3 text-white hover:bg-violet-700"
+            prefetch={false}
+            className="rounded-lg bg-violet-600 px-5 py-3 text-white hover:bg-violet-700"
           >
-            Open Dashboard
+            Dashboard
           </Link>
-
           <Link
             href="/expenses"
-            className="rounded-lg border border-slate-300 px-6 py-3 text-slate-700 hover:bg-slate-100"
+            prefetch={false}
+            className="rounded-lg border border-slate-300 px-5 py-3 text-slate-700 hover:bg-slate-100"
           >
-            View Expenses
+            Expenses
+          </Link>
+          <Link
+            href="/income"
+            prefetch={false}
+            className="rounded-lg border border-slate-300 px-5 py-3 text-slate-700 hover:bg-slate-100"
+          >
+            Income
+          </Link>
+          <Link
+            href="/categories"
+            prefetch={false}
+            className="rounded-lg border border-slate-300 px-5 py-3 text-slate-700 hover:bg-slate-100"
+          >
+            Categories
           </Link>
         </div>
       </section>
